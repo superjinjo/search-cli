@@ -77,7 +77,7 @@ func (repo *SearchRepository) FindOrgs(fieldName string, searchValue interface{}
 }
 
 func (repo *SearchRepository) FindTickets(fieldName string, searchValue interface{}) []map[string]interface{} {
-	tickets := repo.orgRepository.FindByField(fieldName, searchValue)
+	tickets := repo.ticketRepository.FindByField(fieldName, searchValue)
 
 	for i, ticket := range tickets {
 		org := repo.findOrgRelation(ticket)
