@@ -15,6 +15,10 @@ func floatVal(value interface{}) (float64, bool) {
 		return v, true
 
 	case string:
+		if v == "" {
+			return 0, true
+		}
+
 		if floatVal, err := strconv.ParseFloat(v, 64); err == nil {
 			return floatVal, true
 		}
@@ -22,7 +26,7 @@ func floatVal(value interface{}) (float64, bool) {
 		return 0, false
 
 	default:
-		return 0, false
+		return 0, v == nil
 	}
 }
 
@@ -36,7 +40,7 @@ func boolVal(value interface{}) (bool, bool) {
 	case string:
 		if strings.EqualFold(v, "true") || v == "1" {
 			return true, true
-		} else if strings.EqualFold(v, "false") || v == "0" {
+		} else if strings.EqualFold(v, "false") || v == "0" || v == "" {
 			return false, true
 		}
 
@@ -45,7 +49,34 @@ func boolVal(value interface{}) (bool, bool) {
 		return v, true
 
 	default:
-		return false, false
+		return false, v == nil
+	}
+}
+
+func sliceVal(value interface{}) []interface{} {
+	switch v := value.(type) {
+	case []interface{}:
+		return v
+	case string:
+		stringSlice := []interface{}{}
+		if v == "" {
+			return stringSlice
+		}
+
+		splitVal := strings.Split(v, ",")
+		//after splitting we have to loop through and put it in the interface slice
+		//because a string slice is not convertable to any other type of slice
+		for _, nextVal := range splitVal {
+			stringSlice = append(stringSlice, nextVal)
+		}
+
+		return stringSlice
+	default:
+		if value == nil {
+			return []interface{}{}
+		}
+
+		return []interface{}{value}
 	}
 }
 
@@ -70,7 +101,7 @@ func sliceContains(subjectSlice []interface{}, termSlice []interface{}) bool {
 	for _, termVal := range termSlice {
 		hasVal := false
 		for _, subjectVal := range subjectSlice {
-			hasVal = valuesMatch(subjectVal, termVal)
+			hasVal = SearchValueMatches(subjectVal, termVal)
 
 			if hasVal {
 				break
@@ -87,16 +118,23 @@ func sliceContains(subjectSlice []interface{}, termSlice []interface{}) bool {
 
 //only checking values on supported data types
 func valueIsEmpty(value interface{}) bool {
+	if valSlice, isSlice := value.([]interface{}); isSlice {
+		return len(valSlice) == 0
+	}
+
 	return value == nil || value == "" || value == 0 || value == float64(0) || value == false
 }
+
+//ValueMatcher functions dictate the rules for deciding if two values match
+type ValueMatcher func(subject interface{}, term interface{}) bool
 
 //empty values will count as equivalent if the field value is nil
 //nil or empty string will count as equivalent is field is an empty slice
 //a term slice is considered a match for a subject slice if the subject contains all items from the term (order doesn't matter)
-func valuesMatch(subject interface{}, term interface{}) bool {
+func SearchValueMatches(subject interface{}, term interface{}) bool {
 	switch subjVal := subject.(type) {
 	case int:
-		return valuesMatch(float64(subjVal), term)
+		return SearchValueMatches(float64(subjVal), term)
 	case float64:
 		termVal, isFloat := floatVal(term)
 		if isFloat {
@@ -112,15 +150,7 @@ func valuesMatch(subject interface{}, term interface{}) bool {
 
 		return false
 	case []interface{}:
-		if termSlice, isSlice := term.([]interface{}); isSlice {
-			return sliceContains(subjVal, termSlice)
-		}
-
-		if len(subjVal) == 0 {
-			return term == nil || term ==""
-		}
-
-		return false
+		return sliceContains(subjVal, sliceVal(term))
 	case string:
 		return stringVal(term) == subjVal
 	default:

@@ -6,19 +6,21 @@ import (
 
 //FYI this is why I use float64: https://golang.org/pkg/encoding/json/#Unmarshal
 type UserRepository struct {
-	usersIndex map[float64]map[string]interface{} //map of json data indexed by user ID
-	orgsIndex  map[float64][]float64              //map of user IDs indext by org ID
+	usersIndex   map[float64]map[string]interface{} //map of json data indexed by user ID
+	orgsIndex    map[float64][]float64              //map of user IDs indext by org ID
+	valueMatcher ValueMatcher
 }
 
 func NewUserRepository(users []map[string]interface{}) (*UserRepository, error) {
 
 	repository := &UserRepository{
-		usersIndex: make(map[float64]map[string]interface{}),
-		orgsIndex:  make(map[float64][]float64),
+		usersIndex:   make(map[float64]map[string]interface{}),
+		orgsIndex:    make(map[float64][]float64),
+		valueMatcher: SearchValueMatches,
 	}
 
 	for i, user := range users {
-		if err := repository.AddUser(user); err != nil {
+		if err := repository.addUser(user); err != nil {
 			return nil, errors.WithMessagef(err, "Error with user at index %d", i)
 		}
 	}
@@ -26,10 +28,15 @@ func NewUserRepository(users []map[string]interface{}) (*UserRepository, error) 
 	return repository, nil
 }
 
-func (repo *UserRepository) AddUser(user map[string]interface{}) error {
+//SetValueMatcher lets you set a different matcher which is useful for testing
+func (repo *UserRepository) SetValueMatcher(matcherFn ValueMatcher) {
+	repo.valueMatcher = matcherFn
+}
+
+func (repo *UserRepository) addUser(user map[string]interface{}) error {
 	userID, isInt := user["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
 	if !isInt {
-		return errors.New("User is missing \"_id\" field")
+		return errors.New("User is missing \"_id\" field or \"_id\" is not float64")
 	}
 
 	if _, exists := repo.usersIndex[userID]; exists {
@@ -40,14 +47,15 @@ func (repo *UserRepository) AddUser(user map[string]interface{}) error {
 
 	if orgID, isInt := user["organization_id"].(float64); isInt {
 		repo.orgsIndex[orgID] = append(repo.orgsIndex[orgID], userID)
+	} else {
+		repo.orgsIndex[0] = append(repo.orgsIndex[0], userID)
 	}
 
 	return nil
 }
 
-func (repo *UserRepository) FindByID(userID float64) (map[string]interface{}, bool) {
-	user, exists := repo.usersIndex[userID]
-	return user, exists
+func (repo *UserRepository) FindByID(userID float64) map[string]interface{} {
+	return repo.usersIndex[userID]
 }
 
 func (repo *UserRepository) FindByOrg(orgID float64) []map[string]interface{} {
@@ -58,7 +66,7 @@ func (repo *UserRepository) FindByOrg(orgID float64) []map[string]interface{} {
 	for i := 0; i < len(userIDs); i++ {
 		nextID := userIDs[i]
 
-		if user, exists := repo.FindByID(nextID); exists {
+		if user := repo.FindByID(nextID); user != nil {
 			userList[i] = user
 		}
 	}
@@ -72,7 +80,7 @@ func (repo *UserRepository) FindByField(fieldName string, searchVal interface{})
 		var userList []map[string]interface{}
 
 		userID, isInt := floatVal(searchVal)
-		if user, exists := repo.FindByID(userID); isInt && exists {
+		if user := repo.FindByID(userID); isInt && user != nil {
 			userList = append(userList, user)
 		}
 
@@ -90,7 +98,7 @@ func (repo *UserRepository) FindByField(fieldName string, searchVal interface{})
 		var userList []map[string]interface{}
 
 		for _, user := range repo.usersIndex {
-			if valuesMatch(user[fieldName], searchVal) {
+			if repo.valueMatcher(user[fieldName], searchVal) {
 				userList = append(userList, user)
 			}
 		}
