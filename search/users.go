@@ -34,8 +34,8 @@ func (repo *UserRepository) SetValueMatcher(matcherFn ValueMatcher) {
 }
 
 func (repo *UserRepository) addUser(user map[string]interface{}) error {
-	userID, isInt := user["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
-	if !isInt {
+	userID, isFloat := user["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
+	if !isFloat {
 		return errors.New("User is missing \"_id\" field or \"_id\" is not float64")
 	}
 
@@ -45,7 +45,7 @@ func (repo *UserRepository) addUser(user map[string]interface{}) error {
 
 	repo.usersIndex[userID] = user
 
-	if orgID, isInt := user["organization_id"].(float64); isInt {
+	if orgID, isFloat := user["organization_id"].(float64); isFloat {
 		repo.orgsIndex[orgID] = append(repo.orgsIndex[orgID], userID)
 	} else {
 		repo.orgsIndex[0] = append(repo.orgsIndex[0], userID)
@@ -79,8 +79,8 @@ func (repo *UserRepository) FindByField(fieldName string, searchVal interface{})
 	case "_id":
 		var userList []map[string]interface{}
 
-		userID, isInt := floatVal(searchVal)
-		if user := repo.FindByID(userID); isInt && user != nil {
+		userID, isFloat := floatVal(searchVal)
+		if user := repo.FindByID(userID); isFloat && user != nil {
 			userList = append(userList, user)
 		}
 
@@ -88,7 +88,7 @@ func (repo *UserRepository) FindByField(fieldName string, searchVal interface{})
 
 	case "organization_id":
 
-		if orgID, isInt := floatVal(searchVal); isInt {
+		if orgID, isFloat := floatVal(searchVal); isFloat {
 			return repo.FindByOrg(orgID)
 		}
 

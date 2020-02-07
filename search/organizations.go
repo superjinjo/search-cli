@@ -32,8 +32,8 @@ func (repo *OrgRepository) SetValueMatcher(matcherFn ValueMatcher) {
 }
 
 func (repo *OrgRepository) addOrg(org map[string]interface{}) error {
-	orgID, isInt := org["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
-	if !isInt {
+	orgID, isFloat := org["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
+	if !isFloat {
 		return errors.New("Org is missing \"_id\" field or \"_id\" is not float64")
 	}
 
@@ -54,8 +54,8 @@ func (repo *OrgRepository) FindByField(fieldName string, searchVal interface{}) 
 	case "_id":
 		var orgList []map[string]interface{}
 
-		orgID, isInt := floatVal(searchVal)
-		if org := repo.FindByID(orgID); isInt && org != nil {
+		orgID, isFloat := floatVal(searchVal)
+		if org := repo.FindByID(orgID); isFloat && org != nil {
 			orgList = append(orgList, org)
 		}
 
