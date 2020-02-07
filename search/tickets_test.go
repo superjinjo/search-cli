@@ -7,10 +7,10 @@ import (
 	"github.com/superjinjo/zendesk-search/search"
 )
 
-func Test_NewTicketRepository(t *testing.T) {
+func Test_NewTicketJSONRepository(t *testing.T) {
 	//empty list is valid
 	emptyList := []map[string]interface{}{}
-	_, err1 := search.NewTicketRepository(emptyList)
+	_, err1 := search.NewTicketJSONRepository(emptyList)
 	require.Nil(t, err1)
 
 	//single item in list
@@ -23,7 +23,7 @@ func Test_NewTicketRepository(t *testing.T) {
 			"submitter_id":    float64(2),
 		},
 	}
-	_, err2 := search.NewTicketRepository(goodList1)
+	_, err2 := search.NewTicketJSONRepository(goodList1)
 	require.Nil(t, err2)
 
 	//no organization_id, submitter_id, and assignee_id  is okay
@@ -40,7 +40,7 @@ func Test_NewTicketRepository(t *testing.T) {
 			"subject": "Johnny Jarvis ticket",
 		},
 	}
-	_, err3 := search.NewTicketRepository(goodList2)
+	_, err3 := search.NewTicketJSONRepository(goodList2)
 	require.Nil(t, err3)
 
 	//"_id" field is required
@@ -57,7 +57,7 @@ func Test_NewTicketRepository(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	_, err4 := search.NewTicketRepository(badList1)
+	_, err4 := search.NewTicketJSONRepository(badList1)
 	require.NotNil(t, err4)
 
 	//_id must be a string
@@ -74,7 +74,7 @@ func Test_NewTicketRepository(t *testing.T) {
 			"subject": "Johnny Jarvis ticket",
 		},
 	}
-	_, err5 := search.NewTicketRepository(badList2)
+	_, err5 := search.NewTicketJSONRepository(badList2)
 	require.NotNil(t, err5)
 
 	//duplicate _id fields
@@ -91,12 +91,12 @@ func Test_NewTicketRepository(t *testing.T) {
 			"subject": "Johnny Jarvis ticket",
 		},
 	}
-	_, err6 := search.NewTicketRepository(badList3)
+	_, err6 := search.NewTicketJSONRepository(badList3)
 	require.NotNil(t, err6)
 
 }
 
-func Test_TicketRepository_FindByID(t *testing.T) {
+func Test_TicketJSONRepository_FindByID(t *testing.T) {
 	ticketList := []map[string]interface{}{
 		{
 			"_id":             "436bf9b0-1147-4c0a-8439-6f79833bff5b",
@@ -110,7 +110,7 @@ func Test_TicketRepository_FindByID(t *testing.T) {
 			"subject": "Johnny Jarvis ticket",
 		},
 	}
-	repository, err := search.NewTicketRepository(ticketList)
+	repository, err := search.NewTicketJSONRepository(ticketList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByID("436bf9b0-1147-4c0a-8439-6f79833bff5b")
@@ -123,7 +123,7 @@ func Test_TicketRepository_FindByID(t *testing.T) {
 	require.Nil(t, result3)
 }
 
-func Test_TicketRepository_FindByOrg(t *testing.T) {
+func Test_TicketJSONRepository_FindByOrg(t *testing.T) {
 	ticketList := []map[string]interface{}{
 		{
 			"_id":             "436bf9b0-1147-4c0a-8439-6f79833bff5b",
@@ -140,7 +140,7 @@ func Test_TicketRepository_FindByOrg(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	repository, err := search.NewTicketRepository(ticketList)
+	repository, err := search.NewTicketJSONRepository(ticketList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByOrg(123)
@@ -153,7 +153,7 @@ func Test_TicketRepository_FindByOrg(t *testing.T) {
 	require.Contains(t, result2, ticketList[1])
 }
 
-func Test_TicketRepository_FindBySubmitter(t *testing.T) {
+func Test_TicketJSONRepository_FindBySubmitter(t *testing.T) {
 	ticketList := []map[string]interface{}{
 		{
 			"_id":          "436bf9b0-1147-4c0a-8439-6f79833bff5b",
@@ -170,7 +170,7 @@ func Test_TicketRepository_FindBySubmitter(t *testing.T) {
 			"submitter_id": float64(123),
 		},
 	}
-	repository, err := search.NewTicketRepository(ticketList)
+	repository, err := search.NewTicketJSONRepository(ticketList)
 	require.Nil(t, err)
 
 	result1 := repository.FindBySubmitter(123)
@@ -183,7 +183,7 @@ func Test_TicketRepository_FindBySubmitter(t *testing.T) {
 	require.Contains(t, result2, ticketList[1])
 }
 
-func Test_TicketRepository_FindByAssignee(t *testing.T) {
+func Test_TicketJSONRepository_FindByAssignee(t *testing.T) {
 	ticketList := []map[string]interface{}{
 		{
 			"_id":         "436bf9b0-1147-4c0a-8439-6f79833bff5b",
@@ -200,7 +200,7 @@ func Test_TicketRepository_FindByAssignee(t *testing.T) {
 			"assignee_id": float64(123),
 		},
 	}
-	repository, err := search.NewTicketRepository(ticketList)
+	repository, err := search.NewTicketJSONRepository(ticketList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByAssignee(123)
@@ -213,7 +213,7 @@ func Test_TicketRepository_FindByAssignee(t *testing.T) {
 	require.Contains(t, result2, ticketList[1])
 }
 
-func Test_TicketRepository_FindByField(t *testing.T) {
+func Test_TicketJSONRepository_FindByField(t *testing.T) {
 	ticketList := []map[string]interface{}{
 		{
 			"_id":             "436bf9b0-1147-4c0a-8439-6f79833bff5b",
@@ -234,7 +234,7 @@ func Test_TicketRepository_FindByField(t *testing.T) {
 			"submitter_id": float64(2),
 		},
 	}
-	repository, err := search.NewTicketRepository(ticketList)
+	repository, err := search.NewTicketJSONRepository(ticketList)
 	require.Nil(t, err)
 
 	defaultMatcher := func(subject interface{}, term interface{}) bool {

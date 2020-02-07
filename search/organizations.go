@@ -5,14 +5,14 @@ import (
 )
 
 //FYI this is why I use float64: https://golang.org/pkg/encoding/json/#Unmarshal
-type OrgRepository struct {
+type OrgJSONRepository struct {
 	orgsIndex    map[float64]map[string]interface{} //map of json data indexed by org ID
 	valueMatcher ValueMatcher
 }
 
-func NewOrgRepository(orgs []map[string]interface{}) (*OrgRepository, error) {
+func NewOrgJSONRepository(orgs []map[string]interface{}) (*OrgJSONRepository, error) {
 
-	repository := &OrgRepository{
+	repository := &OrgJSONRepository{
 		orgsIndex:    make(map[float64]map[string]interface{}),
 		valueMatcher: SearchValueMatches,
 	}
@@ -27,11 +27,11 @@ func NewOrgRepository(orgs []map[string]interface{}) (*OrgRepository, error) {
 }
 
 //SetValueMatcher lets you set a different matcher which is useful for testing
-func (repo *OrgRepository) SetValueMatcher(matcherFn ValueMatcher) {
+func (repo *OrgJSONRepository) SetValueMatcher(matcherFn ValueMatcher) {
 	repo.valueMatcher = matcherFn
 }
 
-func (repo *OrgRepository) addOrg(org map[string]interface{}) error {
+func (repo *OrgJSONRepository) addOrg(org map[string]interface{}) error {
 	orgID, isFloat := org["_id"].(float64) //FYI: in go, if a map doesn't have a key, it simply returns nil
 	if !isFloat {
 		return errors.New("Org is missing \"_id\" field or \"_id\" is not float64")
@@ -45,11 +45,11 @@ func (repo *OrgRepository) addOrg(org map[string]interface{}) error {
 	return nil
 }
 
-func (repo *OrgRepository) FindByID(orgID float64) map[string]interface{} {
+func (repo *OrgJSONRepository) FindByID(orgID float64) map[string]interface{} {
 	return repo.orgsIndex[orgID]
 }
 
-func (repo *OrgRepository) FindByField(fieldName string, searchVal interface{}) []map[string]interface{} {
+func (repo *OrgJSONRepository) FindByField(fieldName string, searchVal interface{}) []map[string]interface{} {
 	switch fieldName {
 	case "_id":
 		var orgList []map[string]interface{}

@@ -5,7 +5,7 @@ import (
 )
 
 //FYI this is why I use float64: https://golang.org/pkg/encoding/json/#Unmarshal
-type TicketRepository struct {
+type TicketJSONRepository struct {
 	ticketsIndex   map[string]map[string]interface{} //map of json data indexed by ticket ID
 	orgsIndex      map[float64][]string              //map of ticket IDs indexed by org ID
 	submitterIndex map[float64][]string              //map of ticket IDs indexed by submitter ticket ID
@@ -13,9 +13,9 @@ type TicketRepository struct {
 	valueMatcher   ValueMatcher
 }
 
-func NewTicketRepository(tickets []map[string]interface{}) (*TicketRepository, error) {
+func NewTicketJSONRepository(tickets []map[string]interface{}) (*TicketJSONRepository, error) {
 
-	repository := &TicketRepository{
+	repository := &TicketJSONRepository{
 		ticketsIndex:   make(map[string]map[string]interface{}),
 		orgsIndex:      make(map[float64][]string),
 		submitterIndex: make(map[float64][]string),
@@ -33,11 +33,11 @@ func NewTicketRepository(tickets []map[string]interface{}) (*TicketRepository, e
 }
 
 //SetValueMatcher lets you set a different matcher which is useful for testing
-func (repo *TicketRepository) SetValueMatcher(matcherFn ValueMatcher) {
+func (repo *TicketJSONRepository) SetValueMatcher(matcherFn ValueMatcher) {
 	repo.valueMatcher = matcherFn
 }
 
-func (repo *TicketRepository) addTicket(ticket map[string]interface{}) error {
+func (repo *TicketJSONRepository) addTicket(ticket map[string]interface{}) error {
 	ticketID, isString := ticket["_id"].(string) //FYI: in go, if a map doesn't have a key, it simply returns nil
 	if !isString {
 		return errors.New("User is missing \"_id\" field or \"_id\" is not string")
@@ -70,11 +70,11 @@ func (repo *TicketRepository) addTicket(ticket map[string]interface{}) error {
 	return nil
 }
 
-func (repo *TicketRepository) FindByID(ticketID string) map[string]interface{} {
+func (repo *TicketJSONRepository) FindByID(ticketID string) map[string]interface{} {
 	return repo.ticketsIndex[ticketID]
 }
 
-func (repo *TicketRepository) FindByOrg(orgID float64) []map[string]interface{} {
+func (repo *TicketJSONRepository) FindByOrg(orgID float64) []map[string]interface{} {
 	ticketIDs := repo.orgsIndex[orgID]
 
 	ticketList := make([]map[string]interface{}, len(ticketIDs))
@@ -90,7 +90,7 @@ func (repo *TicketRepository) FindByOrg(orgID float64) []map[string]interface{} 
 	return ticketList
 }
 
-func (repo *TicketRepository) FindBySubmitter(userID float64) []map[string]interface{} {
+func (repo *TicketJSONRepository) FindBySubmitter(userID float64) []map[string]interface{} {
 	ticketIDs := repo.submitterIndex[userID]
 
 	ticketList := make([]map[string]interface{}, len(ticketIDs))
@@ -106,7 +106,7 @@ func (repo *TicketRepository) FindBySubmitter(userID float64) []map[string]inter
 	return ticketList
 }
 
-func (repo *TicketRepository) FindByAssignee(userID float64) []map[string]interface{} {
+func (repo *TicketJSONRepository) FindByAssignee(userID float64) []map[string]interface{} {
 	ticketIDs := repo.assigneeIndex[userID]
 
 	ticketList := make([]map[string]interface{}, len(ticketIDs))
@@ -122,7 +122,7 @@ func (repo *TicketRepository) FindByAssignee(userID float64) []map[string]interf
 	return ticketList
 }
 
-func (repo *TicketRepository) FindByField(fieldName string, searchVal interface{}) []map[string]interface{} {
+func (repo *TicketJSONRepository) FindByField(fieldName string, searchVal interface{}) []map[string]interface{} {
 	switch fieldName {
 	case "_id":
 		var ticketList []map[string]interface{}

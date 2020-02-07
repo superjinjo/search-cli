@@ -7,10 +7,10 @@ import (
 	"github.com/superjinjo/zendesk-search/search"
 )
 
-func Test_NewUserRepository(t *testing.T) {
+func Test_NewUserJSONRepository(t *testing.T) {
 	//empty list is valid
 	emptyList := []map[string]interface{}{}
-	_, err1 := search.NewUserRepository(emptyList)
+	_, err1 := search.NewUserJSONRepository(emptyList)
 	require.Nil(t, err1)
 
 	//single item in list
@@ -21,7 +21,7 @@ func Test_NewUserRepository(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	_, err2 := search.NewUserRepository(goodList1)
+	_, err2 := search.NewUserJSONRepository(goodList1)
 	require.Nil(t, err2)
 
 	//no organization_id is okay
@@ -36,7 +36,7 @@ func Test_NewUserRepository(t *testing.T) {
 			"name": "Johnny Jarvis",
 		},
 	}
-	_, err3 := search.NewUserRepository(goodList2)
+	_, err3 := search.NewUserJSONRepository(goodList2)
 	require.Nil(t, err3)
 
 	//"_id" field is required
@@ -51,7 +51,7 @@ func Test_NewUserRepository(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	_, err4 := search.NewUserRepository(badList1)
+	_, err4 := search.NewUserJSONRepository(badList1)
 	require.NotNil(t, err4)
 
 	//_id must be a float64
@@ -67,7 +67,7 @@ func Test_NewUserRepository(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	_, err5 := search.NewUserRepository(badList2)
+	_, err5 := search.NewUserJSONRepository(badList2)
 	require.NotNil(t, err5)
 
 	//duplicate _id fields
@@ -83,12 +83,12 @@ func Test_NewUserRepository(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	_, err6 := search.NewUserRepository(badList3)
+	_, err6 := search.NewUserJSONRepository(badList3)
 	require.NotNil(t, err6)
 
 }
 
-func Test_UserRepository_FindByID(t *testing.T) {
+func Test_UserJSONRepository_FindByID(t *testing.T) {
 	userList := []map[string]interface{}{
 		{
 			"_id":             float64(1),
@@ -101,7 +101,7 @@ func Test_UserRepository_FindByID(t *testing.T) {
 			"organization_id": float64(123),
 		},
 	}
-	repository, err := search.NewUserRepository(userList)
+	repository, err := search.NewUserJSONRepository(userList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByID(float64(1))
@@ -114,7 +114,7 @@ func Test_UserRepository_FindByID(t *testing.T) {
 	require.Nil(t, result3)
 }
 
-func Test_UserRepository_FindByOrg(t *testing.T) {
+func Test_UserJSONRepository_FindByOrg(t *testing.T) {
 	userList := []map[string]interface{}{
 		{
 			"_id":             float64(1),
@@ -136,7 +136,7 @@ func Test_UserRepository_FindByOrg(t *testing.T) {
 			"name": "Mikey NoOrgs",
 		},
 	}
-	repository, err := search.NewUserRepository(userList)
+	repository, err := search.NewUserJSONRepository(userList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByOrg(123)
@@ -156,7 +156,7 @@ func Test_UserRepository_FindByOrg(t *testing.T) {
 	require.Contains(t, result4, userList[3])
 }
 
-func Test_UserRepository_FindByField(t *testing.T) {
+func Test_UserJSONRepository_FindByField(t *testing.T) {
 	userList := []map[string]interface{}{
 		{
 			"_id":             float64(1),
@@ -180,7 +180,7 @@ func Test_UserRepository_FindByField(t *testing.T) {
 			"name": "Mickey NoOrgs",
 		},
 	}
-	repository, err := search.NewUserRepository(userList)
+	repository, err := search.NewUserJSONRepository(userList)
 	require.Nil(t, err)
 
 	defaultMatcher := func(subject interface{}, term interface{}) bool {

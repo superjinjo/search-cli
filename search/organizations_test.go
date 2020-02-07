@@ -7,10 +7,10 @@ import (
 	"github.com/superjinjo/zendesk-search/search"
 )
 
-func Test_NewOrgRepository(t *testing.T) {
+func Test_NewOrgJSONRepository(t *testing.T) {
 	//empty list is valid
 	emptyList := []map[string]interface{}{}
-	_, err1 := search.NewOrgRepository(emptyList)
+	_, err1 := search.NewOrgJSONRepository(emptyList)
 	require.Nil(t, err1)
 
 	//happy path
@@ -24,7 +24,7 @@ func Test_NewOrgRepository(t *testing.T) {
 			"name": "Aperture Science",
 		},
 	}
-	_, err3 := search.NewOrgRepository(goodList1)
+	_, err3 := search.NewOrgJSONRepository(goodList1)
 	require.Nil(t, err3)
 
 	//"_id" field is required
@@ -37,7 +37,7 @@ func Test_NewOrgRepository(t *testing.T) {
 			"name": "Aperture Science",
 		},
 	}
-	_, err4 := search.NewOrgRepository(badList1)
+	_, err4 := search.NewOrgJSONRepository(badList1)
 	require.NotNil(t, err4)
 
 	//_id must be a float64
@@ -51,7 +51,7 @@ func Test_NewOrgRepository(t *testing.T) {
 			"name": "Aperture Science",
 		},
 	}
-	_, err5 := search.NewOrgRepository(badList2)
+	_, err5 := search.NewOrgJSONRepository(badList2)
 	require.NotNil(t, err5)
 
 	//duplicate _id fields
@@ -65,12 +65,12 @@ func Test_NewOrgRepository(t *testing.T) {
 			"name": "Aperture Science",
 		},
 	}
-	_, err6 := search.NewOrgRepository(badList3)
+	_, err6 := search.NewOrgJSONRepository(badList3)
 	require.NotNil(t, err6)
 
 }
 
-func Test_OrgRepository_FindByID(t *testing.T) {
+func Test_OrgJSONRepository_FindByID(t *testing.T) {
 	orgList := []map[string]interface{}{
 		{
 			"_id":  float64(1),
@@ -81,7 +81,7 @@ func Test_OrgRepository_FindByID(t *testing.T) {
 			"name": "Aperture Science",
 		},
 	}
-	repository, err := search.NewOrgRepository(orgList)
+	repository, err := search.NewOrgJSONRepository(orgList)
 	require.Nil(t, err)
 
 	result1 := repository.FindByID(float64(1))
@@ -94,7 +94,7 @@ func Test_OrgRepository_FindByID(t *testing.T) {
 	require.Nil(t, result3)
 }
 
-func Test_OrgRepository_FindByField(t *testing.T) {
+func Test_OrgJSONRepository_FindByField(t *testing.T) {
 	orgList := []map[string]interface{}{
 		{
 			"_id":  float64(1),
@@ -113,7 +113,7 @@ func Test_OrgRepository_FindByField(t *testing.T) {
 			"name": "Atlas Corperation",
 		},
 	}
-	repository, err := search.NewOrgRepository(orgList)
+	repository, err := search.NewOrgJSONRepository(orgList)
 	require.Nil(t, err)
 
 	defaultMatcher := func(subject interface{}, term interface{}) bool {
