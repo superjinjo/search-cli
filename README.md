@@ -1,4 +1,4 @@
-# zendesk-search
+# search-cli
 
 ## Setup
 To build an executable, do the following: 
