@@ -77,7 +77,7 @@ func (repo *UserJSONRepository) FindByOrg(orgID float64) []map[string]interface{
 func (repo *UserJSONRepository) FindByField(fieldName string, searchVal interface{}) []map[string]interface{} {
 	switch fieldName {
 	case "_id":
-		var userList []map[string]interface{}
+		userList := []map[string]interface{}{}
 
 		userID, isFloat := floatVal(searchVal)
 		if user := repo.FindByID(userID); isFloat && user != nil {
@@ -95,7 +95,7 @@ func (repo *UserJSONRepository) FindByField(fieldName string, searchVal interfac
 		return []map[string]interface{}{}
 
 	default:
-		var userList []map[string]interface{}
+		userList := []map[string]interface{}{}
 
 		for _, user := range repo.usersIndex {
 			if repo.valueMatcher(user[fieldName], searchVal) {
